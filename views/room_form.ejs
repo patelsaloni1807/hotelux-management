@@ -36,8 +36,8 @@
                         <label>Room Image</label>
                         <% if (room && room.image) { %>
                             <div style="margin-bottom: 10px;">
-                                <img src="/uploads/<%= room.image %>" alt="Current Image"
-                                    style="max-width: 200px; border-radius: 8px;">
+                                <img src="<%= room.image.startsWith('data:') ? room.image : '/uploads/' + room.image %>"
+                                    alt="Current Image" style="max-width: 200px; border-radius: 8px;">
                                 <p style="font-size: 0.9em; color: #a0aec0;">Current Image</p>
                             </div>
                             <% } %>

@@ -1,9 +1,12 @@
-mongoose.connect(process.env.MONGODB_URI)
-.then(() => {
-    console.log("MongoDB Connected ✅");
+const mongoose = require('mongoose');
 
-    app.listen(process.env.PORT || 10000, () => {
-        console.log("Server running 🚀");
+const mongoURI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/hotelux';
+
+mongoose.connect(mongoURI)
+    .then(() => console.log('✅ MongoDB connected successfully to', mongoURI.includes('@') ? 'Remote DB' : 'Local DB'))
+    .catch(err => {
+        console.error('❌ MongoDB connection error:', err.message);
+        console.log('💡 Tip: Ensure your MongoDB service is running. On Windows, use "Start-Service -Name MongoDB" in PowerShell.');
     });
-})
-.catch(err => console.log(err));
+
+module.exports = mongoose;

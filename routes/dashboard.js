@@ -6,15 +6,8 @@ const dashboardController = require('../controllers/dashboardController');
 const multer = require('multer');
 const path = require('path');
 
-// Configure Multer
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'public/uploads/');
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
-});
+// Configure Multer to use Memory Storage (for MongoDB Base64 storage)
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 router.get('/', dashboardController.getDashboard);

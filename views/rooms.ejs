@@ -182,7 +182,8 @@
               <% if(room.available) { %>
                 <div class="room-card">
                   <% if (room.image) { %>
-                    <img src="/uploads/<%= room.image %>" alt="<%= room.type %>"
+                    <img src="<%= room.image.startsWith('data:') ? room.image : '/uploads/' + room.image %>"
+                      alt="<%= room.type %>"
                       style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0;">
                     <% } else { %>
                       <div

@@ -72,7 +72,11 @@ exports.getAddRoom = (req, res) => {
 exports.postAddRoom = async (req, res) => {
     if (!req.session.user || req.session.user.role !== 'admin') return res.redirect('/login');
     const { number, type, price, available } = req.body;
-    const image = req.file ? req.file.filename : null;
+    let image = null;
+    if (req.file) {
+        const base64Image = req.file.buffer.toString('base64');
+        image = `data:${req.file.mimetype};base64,${base64Image}`;
+    }
 
     try {
         const newRoom = new Room({
@@ -106,8 +110,6 @@ exports.getEditRoom = async (req, res) => {
 exports.postEditRoom = async (req, res) => {
     if (!req.session.user || req.session.user.role !== 'admin') return res.redirect('/login');
     const { number, type, price, available } = req.body;
-    const image = req.file ? req.file.filename : undefined;
-
     const updateData = {
         number,
         type,
@@ -115,8 +117,9 @@ exports.postEditRoom = async (req, res) => {
         available: available === 'true'
     };
 
-    if (image) {
-        updateData.image = image;
+    if (req.file) {
+        const base64Image = req.file.buffer.toString('base64');
+        updateData.image = `data:${req.file.mimetype};base64,${base64Image}`;
     }
 
     try {
