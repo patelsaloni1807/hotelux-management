@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOTELUX - My Booking</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="website-bg">
+    <%- include('partials/navbar_guest') %>
+        <main class="website-main">
+            <section class="booking-section">
+                <h2 class="text-center" style="margin-bottom: 40px;">My Booking</h2>
+
+                <% if (booking) { %>
+                    <div class="booking-grid">
+                        <div class="booking-card">
+                            <h3 style="color: #6366f1; margin-bottom: 16px;">
+                                <i class="fas fa-bed"></i> Room <%= booking.roomNumber %> - <%= booking.roomType %>
+                            </h3>
+                            <div class="booking-info-item" style="margin-bottom: 12px;">
+                                <span style="color: #a0aec0; font-size: 14px;">Floor</span>
+                                <div style="font-size: 16px;">
+                                    <%= booking.floor %>
+                                </div>
+                            </div>
+                            <div class="booking-info-item" style="margin-bottom: 12px;">
+                                <span style="color: #a0aec0; font-size: 14px;">Duration</span>
+                                <div style="font-size: 16px;">
+                                    <%= booking.nights %> Nights
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 20px; margin-top: 16px;">
+                                <div>
+                                    <span style="color: #a0aec0; font-size: 14px;">Check-In</span>
+                                    <div style="font-size: 15px; color: #48bb78;">
+                                        <%= booking.checkIn %>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span style="color: #a0aec0; font-size: 14px;">Check-Out</span>
+                                    <div style="font-size: 15px; color: #f56565;">
+                                        <%= booking.checkOut %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="booking-card">
+                            <h3 style="color: #f6ad55; margin-bottom: 16px;">
+                                <i class="fas fa-file-invoice-dollar"></i> Billing Summary
+                            </h3>
+                            <div class="booking-info-item" style="margin-bottom: 12px;">
+                                <span style="color: #a0aec0; font-size: 14px;">Booking ID</span>
+                                <div style="font-size: 16px; font-family: monospace;">
+                                    <%= booking.bookingId %>
+                                </div>
+                            </div>
+                            <div class="booking-info-item" style="margin-bottom: 12px;">
+                                <span style="color: #a0aec0; font-size: 14px;">Price per Night</span>
+                                <div style="font-size: 16px;">₹<%= booking.pricePerNight %>
+                                </div>
+                            </div>
+                            <div
+                                style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+                                <span style="color: #a0aec0; font-size: 14px;">Grand Total</span>
+                                <div style="font-size: 24px; font-weight: bold; color: #fff;">₹<%= booking.total %>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="booking-card" style="display: flex; flex-direction: column; gap: 10px;">
+                            <h3 style="color: #fff; margin-bottom: 4px;">Quick Actions</h3>
+                            <button class="btn btn-secondary btn-full" style="padding: 12px;">View Invoice</button>
+                            <button class="btn btn-secondary btn-full" style="padding: 12px;"
+                                onclick="openReviewModal('<%= booking.roomId %>')">Rate your Stay</button>
+
+                            <% if (booking.status !=='Cancelled' ) { %>
+                                <a href="/dashboard/booking/cancel/<%= booking._id %>" class="btn btn-danger btn-full"
+                                    style="padding: 12px;">Cancel Booking</a>
+                                <% } else { %>
+                                    <div class="btn btn-outline btn-full"
+                                        style="cursor: not-allowed; padding: 12px; opacity: 0.6;">Cancelled</div>
+                                    <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Review Modal -->
+                    <div class="modal-overlay" id="reviewModal">
+                        <div class="modal-box text-center" style="max-width: 400px;">
+                            <h3 style="margin-bottom: 8px;">Rate your Stay</h3>
+                            <p style="color: #a0aec0; margin-bottom: 24px; font-size: 14px;">How was your experience in
+                                Room <%= booking.roomNumber %>?</p>
+
+                            <form action="/review" method="POST">
+                                <input type="hidden" name="roomId" id="reviewRoomId">
+                                <div class="star-input" id="starInput"
+                                    style="display: flex; gap: 15px; margin-bottom: 24px; font-size: 28px; justify-content: center;">
+                                    <i class="fas fa-star" onclick="setRating(1)"></i>
+                                    <i class="fas fa-star" onclick="setRating(2)"></i>
+                                    <i class="fas fa-star" onclick="setRating(3)"></i>
+                                    <i class="fas fa-star" onclick="setRating(4)"></i>
+                                    <i class="fas fa-star" onclick="setRating(5)"></i>
+                                </div>
+                                <input type="hidden" name="rating" id="ratingValue" value="5" required>
+
+                                <div class="form-group" style="text-align: left;">
+                                    <label>Your Review</label>
+                                    <textarea name="comment" rows="4" placeholder="Share your experience with us..."
+                                        required></textarea>
+                                </div>
+
+                                <div class="modal-actions">
+                                    <button type="button" class="btn btn-outline btn-full"
+                                        onclick="closeReviewModal()">Cancel</button>
+                                    <button type="submit" class="btn btn-primary btn-full">Submit Review</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <script>
+                        function openReviewModal(roomId) {
+                            if (!roomId || roomId === 'null') {
+                                alert('Error: Room information missing.');
+                                return;
+                            }
+                            document.getElementById('reviewRoomId').value = roomId;
+                            document.getElementById('reviewModal').style.display = 'flex';
+                            setRating(5);
+                        }
+
+                        function closeReviewModal() {
+                            document.getElementById('reviewModal').style.display = 'none';
+                        }
+
+                        function setRating(rating) {
+                            document.getElementById('ratingValue').value = rating;
+                            const stars = document.querySelectorAll('#starInput i');
+                            stars.forEach((star, index) => {
+                                if (index < rating) {
+                                    star.style.color = '#6366f1';
+                                    star.classList.add('fas');
+                                    star.classList.remove('far');
+                                } else {
+                                    star.style.color = '#4a5568';
+                                    star.classList.remove('fas');
+                                    star.classList.add('far');
+                                }
+                            });
+                        }
+
+                        window.onclick = function (event) {
+                            const modal = document.getElementById('reviewModal');
+                            if (event.target == modal) closeReviewModal();
+                        }
+                    </script>
+
+                    <% } else { %>
+                        <div class="booking-card text-center"
+                            style="max-width: 500px; margin: 40px auto; padding: 60px 40px;">
+                            <i class="fas fa-calendar-times"
+                                style="font-size: 48px; color: #4a5568; margin-bottom: 20px;"></i>
+                            <h3 style="color: #fff; margin-bottom: 10px;">No Booking Found</h3>
+                            <p style="color: #a0aec0; margin-bottom: 30px;">You haven't made any reservations yet.
+                                Explore our luxury rooms to get started!</p>
+                            <a href="/rooms" class="btn btn-primary" style="padding: 12px 40px;">Browse Rooms</a>
+                        </div>
+                        <% } %>
+            </section>
+        </main>
+</body>
+
+</html>

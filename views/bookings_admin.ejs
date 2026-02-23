@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOTELUX - Manage Bookings</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="dashboard-bg">
+    <%- include('partials/sidebar_admin') %>
+        <main class="dashboard-main">
+            <section class="dashboard-header">
+                <h2>Manage Bookings</h2>
+                <p>View and manage reservations</p>
+            </section>
+            <section class="dashboard-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Guest</th>
+                            <th>Room</th>
+                            <th>Check-In</th>
+                            <th>Check-Out</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (bookings && bookings.length> 0) { %>
+                            <% bookings.forEach(booking=> { %>
+                                <tr>
+                                    <td>
+                                        <%= booking.bookingId || booking._id.toString().substring(0,6).toUpperCase() %>
+                                    </td>
+                                    <td>
+                                        <%= booking.guest ? booking.guest.name : 'Unknown' %>
+                                    </td>
+                                    <td>
+                                        <%= booking.roomNumber || (booking.room ? booking.room.number : 'N/A' ) %>
+                                    </td>
+                                    <td>
+                                        <%= booking.checkIn ? new Date(booking.checkIn).toLocaleDateString() : '' %>
+                                    </td>
+                                    <td>
+                                        <%= booking.checkOut ? new Date(booking.checkOut).toLocaleDateString() : '' %>
+                                    </td>
+                                    <td>₹<%= booking.amount %>
+                                    </td>
+                                    <td>
+                                        <span class="status <%= booking.status %>">
+                                            <%= booking.status %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary btn-sm">Manage</button>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="8">No bookings found.</td>
+                                        </tr>
+                                        <% } %>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+</body>
+
+</html>

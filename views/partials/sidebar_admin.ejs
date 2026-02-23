@@ -1,0 +1,28 @@
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <img src="/images/hotel-icon.png" alt="Hotelux Logo">
+            <span>HOTELUX</span>
+        </div>
+        <div class="sidebar-user">
+            <span class="user-circle admin">
+                <%= user ? user.name.charAt(0).toUpperCase() : 'A' %>
+            </span>
+            <div class="user-info">
+                <span class="user-name">
+                    <%= user ? user.name : 'Admin' %>
+                </span>
+                <span class="user-role">Admin</span>
+            </div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/dashboard/guests" class="nav-link">Guests</a>
+        <a href="/dashboard/rooms" class="nav-link">Rooms</a>
+        <a href="/dashboard/bookings" class="nav-link">Bookings</a>
+        <a href="/profile" class="nav-link">Profile</a>
+        <a href="/settings" class="nav-link">Settings</a>
+        <a href="/logout" class="nav-link" style="margin-top: auto; color: #f56565;">Logout</a>
+    </nav>
+</aside>

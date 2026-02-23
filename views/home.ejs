@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOTELUX - Welcome</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Booking Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-box {
+            background: #1e293b;
+            padding: 32px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            color: #f8fafc;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-box h2 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+        }
+
+        .modal-price {
+            color: #6366f1;
+            font-size: 20px;
+            margin-bottom: 24px;
+            display: block;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a0aec0;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background: #1a2236;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3a86ff;
+        }
+
+        /* Modal actions handled by global button system */
+
+        .status-available {
+            color: #48bb78;
+            font-weight: bold;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="website-bg"><%- include('partials/navbar_guest') %>
+        <main class="website-main">
+            <section class="hero">
+                <h1>Welcome to HOTELUX</h1>
+                <p>Book your stay with comfort and luxury</p>
+            </section>
+            <section class="features">
+                <div class="feature">Manage room bookings efficiently</div>
+                <div class="feature">Track your reservations</div>
+                <div class="feature">Instant billing and loyalty points</div>
+            </section>
+            <section>
+                <h2>Available Rooms</h2>
+                <div class="rooms-list">
+                    <% if (rooms && rooms.length> 0) {
+                        %><% rooms.forEach(room=> {
+                            %> <% if(room.available) { %>
+                                <div class="room-card">
+                                    <% if (room.image) { %> <img src="/uploads/<%= room.image %>" alt="<%= room.type %>"
+                                            style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0;">
+                                        <% } else { %>
+                                            <div
+                                                style="width: 100%; height: 200px; background: #2d3748; border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
+                                                <span style="color: #a0aec0;">No Image</span>
+                                            </div>
+                                            <% } %>
+                                                <div class="card-content">
+                                                    <h3>
+                                                        <%=room.type %> (<%=room.number %>)
+                                                    </h3>
+                                                    <div class="avg-rating"
+                                                        style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                                        <span style="color: #6366f1; font-size: 14px;">
+                                                            <% for(let i=1; i<=5; i++) { %> <i
+                                                                    class="<%= i <= Math.round(room.avgRating) ? 'fas' : 'far' %> fa-star"></i>
+                                                                <% } %>
+                                                        </span> <span style="color: #a0aec0; font-size: 12px;">(
+                                                            <%=room.totalReviews %> reviews)
+                                                        </span>
+                                                    </div>
+                                                    <p>₹<%=room.price %>/night</p>
+                                                    <p>Status: <span class="status-available">Available</span></p>
+                                                    <button
+                                                        onclick="openBookingModal('<%= room._id %>', '<%= room.type %>', '<%= room.price %>')"
+                                                        class="btn btn-primary btn-full" style="margin-top: auto;">Book
+                                                        Now</button>
+                                                </div>
+                                </div>
+                                <% } %>
+                                    <% }) %>
+                                        <% } else { %>
+                                            <p>No available rooms.</p>
+                                            <% } %>
+                </div>
+            </section>
+        </main>
+        < !-- Booking Modal -->
+            <div class="modal-overlay" id="bookingModal">
+                <div class="modal-box">
+                    <h2 id="modalTitle">Book Room</h2><span class="modal-price" id="modalPrice">₹0/night</span>
+                    <form action="/book" method="POST"><input type="hidden" name="roomId" id="modalRoomId">
+                        <div class="form-group"><label>Check-in Date</label><input type="date" name="checkIn" required>
+                        </div>
+                        <div class="form-group"><label>Check-out Date</label><input type="date" name="checkOut"
+                                required></div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-outline btn-full"
+                                onclick="closeBookingModal()">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-full">Confirm Booking</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <script>function openBookingModal(id, type, price) {
+                    document.getElementById('bookingModal').style.display = 'flex';
+                    document.getElementById('modalTitle').innerText = 'Book ' + type;
+                    document.getElementById('modalPrice').innerText = '₹' + price + '/night';
+                    document.getElementById('modalRoomId').value = id;
+                }
+
+                function closeBookingModal() {
+                    document.getElementById('bookingModal').style.display = 'none';
+                }
+
+                // Close modal on outside click
+                window.onclick = function (event) {
+                    const modal = document.getElementById('bookingModal');
+
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+
+            </script>
+</body>
+
+</html>

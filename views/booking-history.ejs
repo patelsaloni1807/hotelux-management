@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOTELUX - Booking History</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="website-bg">
+    <%- include('partials/navbar_guest') %>
+    <main class="website-main">
+        <section class="history-section">
+            <h2>Booking History</h2>
+            <div class="history-stats">
+                <p>Total Bookings: <%= stats.totalBookings %></p>
+                <p>Completed Stays: <%= stats.completedStays %></p>
+                <p>Total Nights: <%= stats.totalNights %></p>
+                <p>Total Spent: ₹<%= stats.totalSpent %></p>
+            </div>
+            <div class="all-bookings">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Booking</th>
+                            <th>Room</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Rating</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% bookings.forEach(b => { %>
+                            <tr>
+                                <td><%= b.bookingId %></td>
+                                <td><%= b.room %></td>
+                                <td><%= b.date %></td>
+                                <td>₹<%= b.amount %></td>
+                                <td><%= b.rating %></td>
+                                <td><%= b.status %></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <button>Download History</button>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

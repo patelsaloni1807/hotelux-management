@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOTELUX - Login</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="login-bg">
+    <div class="login-container">
+        <!-- Left Side: Hero Brand Section -->
+        <div class="login-left-hero">
+            <div class="brand-content">
+                <div class="brand-logo-box">
+                    <img src="/images/hotel-icon.png" alt="Hotelux Logo">
+                </div>
+                <h1 class="brand-name">HOTELUX</h1>
+                <p class="brand-subtitle">Online Hotel Management System</p>
+
+                <ul class="brand-features">
+                    <li><i class="fas fa-check-circle" style="color: #48bb78;"></i> Manage room bookings efficiently
+                    </li>
+                    <li><i class="fas fa-check-circle" style="color: #6366f1;"></i> Track guests and reservations</li>
+                    <li><i class="fas fa-check-circle" style="color: #f6ad55;"></i> Generate billing reports instantly
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Side: Login Form -->
+        <div class="login-right-form">
+            <div class="login-wrapper">
+                <form action="/login" method="POST" class="login-form">
+                    <h1 style="font-size: 28px; margin-bottom: 8px; color: #fff;">Welcome Back</h1>
+                    <p style="color: #94a3b8; margin-bottom: 32px; font-size: 16px;">Sign in to continue to your
+                        dashboard</p>
+
+                    <% if (locals.error && error.length> 0) { %>
+                        <div class="alert alert-danger"
+                            style="color: #ff4d4d; margin-bottom: 20px; font-size: 0.9rem; text-align: center; background: rgba(255, 77, 77, 0.1); padding: 12px; border-radius: 8px;">
+                            <%= error %>
+                        </div>
+                        <% } %>
+
+                            <div class="login-toggle-pill">
+                                <button type="button" class="toggle-pill-btn active" id="guestBtn">Guest</button>
+                                <button type="button" class="toggle-pill-btn" id="adminBtn">Admin</button>
+                            </div>
+                            <input type="hidden" name="role" id="roleInput" value="guest">
+
+                            <div class="input-group">
+                                <label>Email</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-user"></i>
+                                    <input type="email" name="email" placeholder="Enter your email" required>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label>Password</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-lock"></i>
+                                    <input type="password" name="password" placeholder="Enter your password" required>
+                                </div>
+                            </div>
+
+                            <div class="login-options">
+                                <label class="remember-me">
+                                    <input type="checkbox" name="remember">
+                                    <span>Remember me</span>
+                                </label>
+                                <a href="/forgot-password" class="forgot-link">Forgot password?</a>
+                            </div>
+
+                            <button type="submit" class="login-btn-large">
+                                Sign In <i class="fas fa-arrow-right"></i>
+                            </button>
+
+                            <p class="auth-footer-text">
+                                Don't have an account? <a href="/register"
+                                    style="color: #3b82f6; font-weight: 500;">Register here</a>
+                            </p>
+                </form>
+
+                <p class="copyright-text" style="margin-top: 32px; color: #64748b; font-size: 13px;">© 2024 Hotelux.
+                    Online Hotel Management System</p>
+            </div>
+        </div>
+    </div>
+    <script src="/js/login.js"></script>
+</body>
+
+</html>

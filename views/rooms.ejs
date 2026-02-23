@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HOTELUX - Rooms</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    /* Booking Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-box {
+      background: #1e293b;
+      padding: 32px;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-box h2 {
+      margin: 0 0 8px 0;
+      font-size: 24px;
+    }
+
+    .modal-price {
+      color: #6366f1;
+      font-size: 20px;
+      margin-bottom: 24px;
+      display: block;
+      font-weight: bold;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #a0aec0;
+      font-size: 14px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      background: #1a2236;
+      border: 1px solid #2d3748;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #3a86ff;
+    }
+
+    /* Modal actions handled by global button system */
+
+    /* Review Styling */
+    .star-rating {
+      color: #6366f1;
+      font-size: 18px;
+    }
+
+    .avg-rating {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .review-count {
+      color: #a0aec0;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .reviews-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1001;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .reviews-box {
+      background: #232946;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      border-radius: 20px;
+      padding: 30px;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .review-item {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 15px 0;
+    }
+
+    .review-user {
+      font-weight: bold;
+      color: #3a86ff;
+      margin-bottom: 4px;
+    }
+
+    .review-text {
+      color: #e2e8f0;
+      margin-top: 8px;
+    }
+
+    .write-review {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 2px solid #2d3748;
+    }
+
+    .star-input {
+      display: flex;
+      gap: 5px;
+      margin: 10px 0;
+    }
+
+    .star-input i {
+      cursor: pointer;
+      font-size: 24px;
+      color: #4a5568;
+    }
+
+    .star-input i.active {
+      color: #6366f1;
+    }
+
+    textarea {
+      width: 100%;
+      background: #1a2236;
+      border: 1px solid #2d3748;
+      color: white;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      resize: none;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="website-bg">
+  <%- include('partials/navbar_guest') %>
+    <main class="website-main">
+      <section>
+        <h2>Available Rooms</h2>
+        <div class="rooms-list">
+          <% if (rooms && rooms.length> 0) { %>
+            <% rooms.forEach(room=> { %>
+              <% if(room.available) { %>
+                <div class="room-card">
+                  <% if (room.image) { %>
+                    <img src="/uploads/<%= room.image %>" alt="<%= room.type %>"
+                      style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0;">
+                    <% } else { %>
+                      <div
+                        style="width: 100%; height: 200px; background: #2d3748; border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
+                        <span style="color: #a0aec0;">No Image</span>
+                      </div>
+                      <% } %>
+                        <div class="card-content">
+                          <h3>
+                            <%= room.type %> (<%= room.number %>)
+                          </h3>
+                          <div class="avg-rating">
+                            <span class="star-rating">
+                              <% for(let i=1; i<=5; i++) { %>
+                                <i class="<%= i <= Math.round(room.avgRating) ? 'fas' : 'far' %> fa-star"></i>
+                                <% } %>
+                            </span>
+                            <span class="review-count" onclick="openReviewsModal('<%= room._id %>')">
+                              (<%= room.totalReviews %> reviews)
+                            </span>
+                          </div>
+                          <p>₹<%= room.price %>/night</p>
+                          <p>Status: <span class="status-available">Available</span></p>
+                          <button onclick="openBookingModal('<%= room._id %>', '<%= room.type %>', '<%= room.price %>')"
+                            class="btn btn-primary btn-full" style="margin-top: auto;">Book Now</button>
+                        </div>
+                </div>
+                <% } %>
+                  <% }) %>
+                    <% } else { %>
+                      <p>No available rooms.</p>
+                      <% } %>
+        </div>
+      </section>
+    </main>
+
+    <!-- Booking Modal -->
+    <div class="modal-overlay" id="bookingModal">
+      <div class="modal-box">
+        <h2 id="modalTitle">Book Room</h2>
+        <span class="modal-price" id="modalPrice">₹0/night</span>
+
+        <form action="/book" method="POST">
+          <input type="hidden" name="roomId" id="modalRoomId">
+
+          <div class="form-group">
+            <label>Check-in Date</label>
+            <input type="date" name="checkIn" required>
+          </div>
+
+          <div class="form-group">
+            <label>Check-out Date</label>
+            <input type="date" name="checkOut" required>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn btn-outline btn-full" onclick="closeBookingModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-full">Confirm Booking</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Reviews Modal -->
+    <div class="reviews-modal" id="reviewsModal">
+      <div class="reviews-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2>Guest Reviews</h2>
+          <i class="fas fa-times" style="cursor: pointer; font-size: 24px;" onclick="closeReviewsModal()"></i>
+        </div>
+
+        <div id="reviewsContainer">
+          <!-- Reviews will be loaded here -->
+        </div>
+
+        <div class="write-review">
+          <h3>Write a Review</h3>
+          <form action="/review" method="POST">
+            <input type="hidden" name="roomId" id="reviewRoomId">
+            <div class="star-input" id="starInput">
+              <i class="fas fa-star" onclick="setRating(1)"></i>
+              <i class="fas fa-star" onclick="setRating(2)"></i>
+              <i class="fas fa-star" onclick="setRating(3)"></i>
+              <i class="fas fa-star" onclick="setRating(4)"></i>
+              <i class="fas fa-star" onclick="setRating(5)"></i>
+            </div>
+            <input type="hidden" name="rating" id="ratingValue" value="5" required>
+            <textarea name="comment" rows="3" placeholder="Share your experience..." required></textarea>
+            <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Submit Review</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inject reviews data safely for JS -->
+    <script id="reviewsData" type="application/json">
+      <%- JSON.stringify(rooms.reduce((acc, room) => {
+            acc[room._id] = room.reviews || [];
+            return acc;
+          }, {})) %>
+    </script>
+
+    <script>
+      const roomReviews = JSON.parse(document.getElementById('reviewsData').textContent);
+
+      function openBookingModal(id, type, price) {
+        document.getElementById('bookingModal').style.display = 'flex';
+        document.getElementById('modalTitle').innerText = 'Book ' + type;
+        document.getElementById('modalPrice').innerText = '₹' + price + '/night';
+        document.getElementById('modalRoomId').value = id;
+      }
+
+      function closeBookingModal() {
+        document.getElementById('bookingModal').style.display = 'none';
+      }
+
+      function openReviewsModal(roomId) {
+        const reviews = roomReviews[roomId] || [];
+        const container = document.getElementById('reviewsContainer');
+        document.getElementById('reviewRoomId').value = roomId;
+
+        container.innerHTML = reviews.length > 0 ? '' : '<p style="color: #a0aec0;">No reviews yet. Be the first to review!</p>';
+
+        reviews.forEach(review => {
+          const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+          const date = new Date(review.createdAt).toLocaleDateString();
+          container.innerHTML += `
+            <div class="review-item">
+              <div class="review-user">${review.user ? review.user.name : 'Guest'} <span style="font-weight: normal; font-size: 12px; color: #718096; margin-left: 10px;">${date}</span></div>
+              <div class="star-rating" style="font-size: 14px;">${stars}</div>
+              <div class="review-text">${review.comment}</div>
+            </div>
+          `;
+        });
+
+        document.getElementById('reviewsModal').style.display = 'flex';
+        setRating(5); // Reset star selection to 5
+      }
+
+      function closeReviewsModal() {
+        document.getElementById('reviewsModal').style.display = 'none';
+      }
+
+      function setRating(rating) {
+        document.getElementById('ratingValue').value = rating;
+        const stars = document.querySelectorAll('#starInput i');
+        stars.forEach((star, index) => {
+          if (index < rating) {
+            star.classList.add('active');
+          } else {
+            star.classList.remove('active');
+          }
+        });
+      }
+
+      // Close modals on outside click
+      window.onclick = function (event) {
+        const bookingModal = document.getElementById('bookingModal');
+        const reviewsModal = document.getElementById('reviewsModal');
+        if (event.target == bookingModal) bookingModal.style.display = "none";
+        if (event.target == reviewsModal) reviewsModal.style.display = "none";
+      }
+    </script>
+</body>
+
+</html>

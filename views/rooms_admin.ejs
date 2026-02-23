@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOTELUX - Manage Rooms</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="dashboard-bg">
+    <%- include('partials/sidebar_admin') %>
+        <main class="dashboard-main">
+            <section class="dashboard-header"
+                style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2>Rooms Management</h2>
+                    <p>Manage hotel rooms and availability</p>
+                </div>
+                <a href="/dashboard/rooms/add" class="btn btn-primary" style="border-radius: 8px;">+ Add Room</a>
+            </section>
+
+            <!-- Stats Row -->
+            <section class="stats-container">
+                <div class="stat-card-rooms" style="border-left: 4px solid #3a86ff;">
+                    <h3>Total Rooms</h3>
+                    <div class="value">
+                        <%= totalRooms %>
+                    </div>
+                </div>
+                <div class="stat-card-rooms" style="border-left: 4px solid #48bb78;">
+                    <h3>Available</h3>
+                    <div class="value">
+                        <%= availableRooms %>
+                    </div>
+                </div>
+                <div class="stat-card-rooms" style="border-left: 4px solid #f6ad55;">
+                    <h3>Occupied</h3>
+                    <div class="value">
+                        <%= occupiedRooms %>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filters -->
+            <section class="filters-container">
+                <input type="text" placeholder="Search by room number..." class="search-input">
+                <select class="filter-select">
+                    <option value="all">All Types</option>
+                    <option value="Deluxe">Deluxe</option>
+                    <option value="Standard">Standard</option>
+                    <option value="Suite">Suite</option>
+                </select>
+            </section>
+
+            <!-- Rooms Grid -->
+            <section class="rooms-grid">
+                <% if (rooms && rooms.length> 0) { %>
+                    <% rooms.forEach(room=> { %>
+                        <div class="room-card-admin">
+                            <% if (room.image) { %>
+                                <img src="/uploads/<%= room.image %>" alt="Room"
+                                    style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px 8px 0 0; margin-bottom: 10px;">
+                                <% } %>
+                                    <div class="room-header">
+                                        <div>
+                                            <div class="room-number">Room <%= room.number %>
+                                            </div>
+                                            <div class="room-type">
+                                                <%= room.type %> • Floor 1
+                                            </div> <!-- Assuming Floor 1 for now if not in DB -->
+                                        </div>
+                                        <span class="room-badge <%= room.available ? 'available' : 'occupied' %>">
+                                            <%= room.available ? 'Available' : 'Occupied' %>
+                                        </span>
+                                    </div>
+
+                                    <div class="room-details-grid">
+                                        <div class="detail-label">Capacity</div>
+                                        <div class="detail-value">2 Guests</div> <!-- Fixed for now -->
+
+                                        <div class="detail-label">Price/Night</div>
+                                        <div class="detail-value">₹<%= room.price.toLocaleString() %>
+                                        </div>
+
+                                        <div class="detail-label">Amenities</div>
+                                        <div class="detail-value">AC, WiFi, TV</div> <!-- Fixed for now -->
+                                    </div>
+
+                                    <div class="room-actions">
+                                        <button
+                                            class="status-btn <%= room.available ? 'active available' : '' %>">Available</button>
+                                        <button
+                                            class="status-btn <%= !room.available ? 'active occupied' : '' %>">Occupied</button>
+                                        <button class="status-btn">Maintenance</button>
+                                    </div>
+
+                                    <div class="edit-actions"
+                                        style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 12px;">
+                                        <a href="/dashboard/rooms/edit/<%= room._id %>" class="btn btn-secondary btn-sm"
+                                            style="flex: 1;">Edit</a>
+                                        <form action="/dashboard/rooms/delete/<%= room._id %>" method="POST"
+                                            onsubmit="return confirm('Delete Room?');" style="flex: 1;">
+                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                style="width: 100%;">Delete</button>
+                                        </form>
+                                    </div>
+                        </div>
+                        <% }) %>
+                            <% } else { %>
+                                <p>No rooms found.</p>
+                                <% } %>
+            </section>
+        </main>
+</body>
+
+</html>

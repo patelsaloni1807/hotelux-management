@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOTELUX - Admin Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .dashboard-header {
+            margin-bottom: 24px;
+        }
+
+        .dashboard-header h2 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .dashboard-header p {
+            color: #a0aec0;
+            margin: 4px 0 0;
+        }
+
+        .action-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body class="dashboard-bg">
+    <%- include('partials/sidebar_admin') %>
+        <main class="dashboard-main">
+            <section class="dashboard-header">
+                <h2>Dashboard</h2>
+                <p>Welcome to Hotelux Management System</p>
+            </section>
+
+            <section class="dashboard-cards">
+                <div class="stat-card blue">
+                    <div>
+                        <h3>Total Rooms</h3>
+                        <p class="value">
+                            <%= totalRooms %>
+                        </p>
+                        <p class="trend up">↗ +5.2% vs last month</p>
+                    </div>
+                    <div class="icon-box">🛏️</div>
+                </div>
+                <div class="stat-card green">
+                    <div>
+                        <h3>Active Bookings</h3>
+                        <p class="value">
+                            <%= activeBookings %>
+                        </p>
+                        <p class="trend up">↗ +12.5% vs last month</p>
+                    </div>
+                    <div class="icon-box">📅</div>
+                </div>
+                <div class="stat-card orange">
+                    <div>
+                        <h3>Total Guests</h3>
+                        <p class="value">
+                            <%= totalGuests %>
+                        </p>
+                        <p class="trend up">↗ +8.3% vs last month</p>
+                    </div>
+                    <div class="icon-box">👥</div>
+                </div>
+                <div class="stat-card red">
+                    <div>
+                        <h3>Revenue (₹)</h3>
+                        <p class="value">
+                            <%= revenue ? (revenue / 100000).toFixed(1) + 'L' : '0' %>
+                        </p>
+                        <p class="trend up">↗ +15.2% vs last month</p>
+                    </div>
+                    <div class="icon-box">💰</div>
+                </div>
+            </section>
+
+            <section class="dashboard-charts">
+                <div class="chart-container">
+                    <h3>Room Status Overview</h3>
+                    <div style="height: 300px; display: flex; justify-content: center; align-items: center;">
+                        <canvas id="roomStatusChart"></canvas>
+                    </div>
+                    <div style="margin-top: 20px; display: flex; justify-content: center; gap: 20px; font-size: 12px;">
+                        <span style="color: #10b981">● Occupied: <%= roomStats ? roomStats.occupied : 0 %></span>
+                        <span style="color: var(--primary)">● Available: <%= roomStats ? roomStats.available : 0 %>
+                        </span>
+                        <span style="color: #f59e0b">● Maintenance: <%= roomStats ? roomStats.maintenance : 0 %></span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Monthly Revenue</h3>
+                    <div style="height: 350px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dashboard-table"
+                style="background: var(--surface); padding: 24px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0;">Recent Bookings</h3>
+                    <a href="/dashboard/bookings" class="btn btn-outline btn-sm">View All →</a>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr
+                            style="border-bottom: 1px solid #2d3748; color: #a0aec0; text-align: left; font-size: 12px; text-transform: uppercase;">
+                            <th style="padding: 12px;">Room</th>
+                            <th style="padding: 12px;">Guest</th>
+                            <th style="padding: 12px;">Type</th>
+                            <th style="padding: 12px;">Check-In</th>
+                            <th style="padding: 12px;">Status</th>
+                            <th style="padding: 12px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (recentBookings && recentBookings.length> 0) { %>
+                            <% recentBookings.forEach(booking=> { %>
+                                <tr style="border-bottom: 1px solid #2d3748;">
+                                    <td style="padding: 16px; font-weight: bold;">
+                                        <%= booking.room %>
+                                    </td>
+                                    <td style="padding: 16px;">
+                                        <%= booking.guest ? booking.guest.name : 'Unknown' %>
+                                    </td>
+                                    <td style="padding: 16px;">
+                                        <%= booking.type %>
+                                    </td>
+                                    <td style="padding: 16px;">
+                                        <%= new Date(booking.checkIn).toLocaleDateString() %>
+                                    </td>
+                                    <td style="padding: 16px;">
+                                        <span
+                                            style="padding: 4px 12px; border-radius: 20px; font-size: 12px; background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+                                            <%= booking.status %>
+                                        </span>
+                                    </td>
+                                    <td style="padding: 16px;">
+                                        <a href="#" style="color: var(--primary); text-decoration: none;">👁️</a>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" style="padding: 20px; text-align: center; color: #a0aec0;">
+                                                No recent bookings</td>
+                                        </tr>
+                                        <% } %>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="/js/dashboard.js"></script>
+        <!-- Data attributes for Chart.js -->
+        <script>
+            // Pass data to external script via data attributes on the canvas element 
+            const roomChart = document.getElementById('roomStatusChart');
+            if (roomChart) {
+                roomChart.setAttribute('data-occupied', '<%= roomStats ? roomStats.occupied : 0 %>');
+                roomChart.setAttribute('data-available', '<%= roomStats ? roomStats.available : 0 %>');
+                roomChart.setAttribute('data-maintenance', '<%= roomStats ? roomStats.maintenance : 0 %>');
+            }
+        </script>
+</body>
+
+</html>

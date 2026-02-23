@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOTELUX - <%= room ? 'Edit Room' : 'Add Room' %>
+    </title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .form-container {
+            background: var(--surface);
+            padding: 40px;
+            border-radius: 24px;
+            max-width: 600px;
+            margin: 0 auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+
+<body class="dashboard-bg">
+    <%- include('partials/sidebar_admin') %>
+        <main class="dashboard-main">
+            <section class="dashboard-header">
+                <h2>
+                    <%= room ? 'Edit Room' : 'Add New Room' %>
+                </h2>
+            </section>
+
+            <div class="form-container">
+                <form action="/dashboard/rooms/<%= room ? 'edit/' + room._id : 'add' %>" method="POST"
+                    enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>Room Image</label>
+                        <% if (room && room.image) { %>
+                            <div style="margin-bottom: 10px;">
+                                <img src="/uploads/<%= room.image %>" alt="Current Image"
+                                    style="max-width: 200px; border-radius: 8px;">
+                                <p style="font-size: 0.9em; color: #a0aec0;">Current Image</p>
+                            </div>
+                            <% } %>
+                                <input type="file" name="image" accept="image/*" <%=room ? '' : 'required' %>>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Room Number</label>
+                        <input type="text" name="number" value="<%= room ? room.number : '' %>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Room Type</label>
+                        <select name="type" required>
+                            <option value="Deluxe" <%=(room && room.type==='Deluxe' ) ? 'selected' : '' %>>Deluxe
+                            </option>
+                            <option value="Standard" <%=(room && room.type==='Standard' ) ? 'selected' : '' %>>Standard
+                            </option>
+                            <option value="Suite" <%=(room && room.type==='Suite' ) ? 'selected' : '' %>>Suite</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Price per Night (₹)</label>
+                        <input type="number" name="price" value="<%= room ? room.price : '' %>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Availability</label>
+                        <select name="available">
+                            <option value="true" <%=(room && room.available) ? 'selected' : '' %>>Available</option>
+                            <option value="false" <%=(room && !room.available) ? 'selected' : '' %>>Occupied /
+                                Maintenance</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-top: 32px; display: flex; gap: 16px;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1; padding: 14px;">
+                            <%= room ? 'Update Room' : 'Add Room' %>
+                        </button>
+                        <a href="/dashboard/rooms" class="btn btn-outline" style="flex: 1; padding: 14px;">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </main>
+</body>
+
+</html>

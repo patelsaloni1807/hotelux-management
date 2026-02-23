@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOTELUX - Bookings</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dashboard-bg">
+    <%- include('partials/sidebar_admin') %>
+    <main class="dashboard-main">
+        <section class="dashboard-header">
+            <h2>Bookings</h2>
+            <p>Manage room reservations and check-ins</p>
+        </section>
+        <section class="dashboard-table">
+            <!-- Bookings Table -->
+        </section>
+        <section class="my-booking">
+            <h2>My Current Booking</h2>
+            <div class="booking-details">
+                <div>
+                    <h3>Room <%= booking.roomNumber %> - <%= booking.roomType %></h3>
+                    <p>Floor: <%= booking.floor %></p>
+                    <p>Duration: <%= booking.nights %> Nights</p>
+                    <p>Check-In: <%= booking.checkIn %></p>
+                    <p>Check-Out: <%= booking.checkOut %></p>
+                </div>
+                <div>
+                    <h4>Billing Summary</h4>
+                    <p>Booking ID: <%= booking.bookingId %></p>
+                    <p>Price/Night: ₹<%= booking.pricePerNight %></p>
+                    <p>Grand Total: ₹<%= booking.total %></p>
+                </div>
+                <div>
+                    <h4>Room Amenities</h4>
+                    <ul>
+                        <% booking.amenities.forEach(a => { %>
+                            <li><%= a %></li>
+                        <% }) %>
+                    </ul>
+                    <p>Special Requests: <%= booking.specialRequests %></p>
+                </div>
+                <div>
+                    <h4>Quick Actions</h4>
+                    <button>View Invoice</button>
+                    <button>Request Room Service</button>
+                    <button>Extend Stay</button>
+                    <button>Early Check-Out</button>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
