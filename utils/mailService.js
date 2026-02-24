@@ -1,24 +1,22 @@
 const nodemailer = require('nodemailer');
 const path = require('path');
-// Use absolute path to ensure we always load the right .env
-require('dotenv').config({ path: path.join(__dirname, '../.env'), override: true });
+
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 console.log('--- Email Service Initializing ---');
 console.log(`Using Email: ${process.env.EMAIL_USER}`);
-const passMasked = process.env.EMAIL_PASS ? (process.env.EMAIL_PASS.substring(0, 3) + '...' + process.env.EMAIL_PASS.substring(Math.max(0, process.env.EMAIL_PASS.length - 3))) : 'NOT SET';
-console.log(`Using Password: ${passMasked}`);
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
-  secure: true,
+  secure: true, // IMPORTANT for 465
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
 
-// Verify connection configuration
+// Verify connection
 transporter.verify(function (error, success) {
     if (error) {
         console.error('❌ Email Transporter Error:', error.message);
@@ -28,13 +26,14 @@ transporter.verify(function (error, success) {
 });
 
 exports.sendBookingConfirmation = async (user, booking) => {
+
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.warn('⚠️ Email credentials not set in .env. Skipping email notification.');
+        console.warn('⚠️ Email credentials not set. Skipping email notification.');
         return;
     }
 
     const mailOptions = {
-        from: '"HOTELUX Reservations" <patelsalu1807@gmail.com>',
+        from: `"HOTELUX Reservations" <${process.env.EMAIL_USER}>`,
         to: user.email,
         subject: `Booking Confirmed: #${booking.bookingId}`,
         html: `
@@ -45,7 +44,9 @@ exports.sendBookingConfirmation = async (user, booking) => {
                 </div>
                 <div style="padding: 32px;">
                     <h2 style="color: #1e293b; margin-top: 0;">Hello ${user.name},</h2>
-                    <p style="color: #475569; font-size: 16px; line-height: 1.5;">Thank you for choosing Hotelux. Your booking has been successfully processed. Here are your reservation details:</p>
+                    <p style="color: #475569; font-size: 16px; line-height: 1.5;">
+                        Thank you for choosing Hotelux. Your booking has been successfully processed. Here are your reservation details:
+                    </p>
                     
                     <div style="background-color: #f8fafc; padding: 24px; border-radius: 8px; margin: 24px 0;">
                         <table style="width: 100%; border-collapse: collapse;">
@@ -78,7 +79,10 @@ exports.sendBookingConfirmation = async (user, booking) => {
 
                     <p style="color: #475569;">You can view your full booking details and manage your reservation in your dashboard.</p>
                     <div style="text-align: center; margin-top: 32px;">
-                        <a href="${process.env.BASE_URL || 'http://localhost:3000'}/dashboard/my-booking" style="background-color: #6366f1; color: white; padding: 12px 32px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Details</a>
+                        <a href="${process.env.BASE_URL || 'http://localhost:3000'}/dashboard/my-booking"
+                           style="background-color: #6366f1; color: white; padding: 12px 32px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                           View Details
+                        </a>
                     </div>
                 </div>
                 <div style="background-color: #f1f5f9; padding: 16px; text-align: center; color: #64748b; font-size: 12px;">
@@ -96,8 +100,6 @@ exports.sendBookingConfirmation = async (user, booking) => {
         console.log(`- MessageID: ${info.messageId}`);
         console.log(`- Response: ${info.response}`);
     } catch (err) {
-        console.error('❌ Error sending booking confirmation email:', err);
+        console.error('❌ Error sending booking confirmation email:', err.message);
     }
 };
-
-
