@@ -8,7 +8,7 @@ console.log(`Using Email: ${process.env.EMAIL_USER}`);
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 465,
+  port: 443,
   secure: true, // IMPORTANT for 465
   auth: {
     user: process.env.EMAIL_USER,
@@ -103,3 +103,4 @@ exports.sendBookingConfirmation = async (user, booking) => {
         console.error('❌ Error sending booking confirmation email:', err.message);
     }
 };
+
