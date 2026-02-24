@@ -65,35 +65,48 @@
                                 <% } %>
                                     <div class="room-header">
                                         <div>
-                                            <div class="room-number">Room <%= room.number %>
+                                            <div class="room-number">
+                                                <%= room.type %> Room
                                             </div>
                                             <div class="room-type">
-                                                <%= room.type %> • Floor 1
-                                            </div> <!-- Assuming Floor 1 for now if not in DB -->
+                                                <%= room.roomNumbers ? room.roomNumbers.length : 0 %> Total Units •
+                                                    Mehsana
+                                            </div>
                                         </div>
                                         <span class="room-badge <%= room.available ? 'available' : 'occupied' %>">
-                                            <%= room.available ? 'Available' : 'Occupied' %>
+                                            <%= room.available ? 'Category Active' : 'Inactive' %>
                                         </span>
                                     </div>
 
-                                    <div class="room-details-grid">
-                                        <div class="detail-label">Capacity</div>
-                                        <div class="detail-value">2 Guests</div> <!-- Fixed for now -->
+                                    <!-- Subcategories (Room Numbers) -->
+                                    <p style="font-size: 13px; color: #a0aec0; margin: 15px 0 8px 0; font-weight: 600;">
+                                        Room Numbers:</p>
+                                    <div style="margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 8px;">
+                                        <% if(room.roomNumbers && room.roomNumbers.length> 0) { %>
+                                            <% room.roomNumbers.forEach(num=> {
+                                                const isBooked = currentlyBookedNumbers.includes(num.number);
+                                                %>
+                                                <span
+                                                    style="background: <%= isBooked ? 'rgba(245, 101, 101, 0.2)' : 'rgba(255,255,255,0.05)' %>; padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid <%= isBooked ? '#f56565' : 'rgba(255,255,255,0.1)' %>; color: <%= isBooked ? '#f56565' : (num.status === 'Available' ? '#48bb78' : '#ed8936') %>;"
+                                                    title="<%= isBooked ? 'Currently Occupied' : num.status %>">
+                                                    #<%= num.number %>
+                                                </span>
+                                                <% }) %>
+                                                    <% } else { %>
+                                                        <span style="color: #ed8936; font-size: 12px;">No rooms added
+                                                            yet</span>
+                                                        <% } %>
+                                    </div>
 
+                                    <div class="room-details-grid">
                                         <div class="detail-label">Price/Night</div>
                                         <div class="detail-value">₹<%= room.price.toLocaleString() %>
                                         </div>
 
                                         <div class="detail-label">Amenities</div>
-                                        <div class="detail-value">AC, WiFi, TV</div> <!-- Fixed for now -->
-                                    </div>
-
-                                    <div class="room-actions">
-                                        <button
-                                            class="status-btn <%= room.available ? 'active available' : '' %>">Available</button>
-                                        <button
-                                            class="status-btn <%= !room.available ? 'active occupied' : '' %>">Occupied</button>
-                                        <button class="status-btn">Maintenance</button>
+                                        <div class="detail-value">
+                                            <%= room.isAC ? 'A.C.' : 'Non A.C.' %>, WiFi, TV
+                                        </div>
                                     </div>
 
                                     <div class="edit-actions"

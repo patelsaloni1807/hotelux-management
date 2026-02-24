@@ -6,12 +6,12 @@
     <ul class="navbar-links">
         <li><a href="/">Home</a></li>
         <li><a href="/rooms">Rooms</a></li>
-        <li><a href="/my-booking">My Booking</a></li>
+        <li><a href="/dashboard/my-booking">My Booking</a></li>
         <li><a href="/profile">Profile</a></li>
         <% if (!session.user) { %>
-        <li><a href="/login">Login</a></li>
-        <% } else { %>
-        <li><a href="/logout">Logout</a></li>
-        <% } %>
+            <li><a href="/login">Login</a></li>
+            <% } else { %>
+                <li><a href="/logout">Logout</a></li>
+                <% } %>
     </ul>
 </nav>

@@ -45,19 +45,24 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Room Number</label>
-                        <input type="text" name="number" value="<%= room ? room.number : '' %>" required>
+                        <label>Room Category (e.g. Deluxe, Standard)</label>
+                        <select name="type" required>
+                            <option value="" <%=room && room.type=='' ? 'selected' : '' %>>select room type</option>
+                            <option value="Deluxe Premium" <%=room && room.type=='Deluxe Premium' ? 'selected' : '' %>
+                                >Deluxe Premium</option>
+                            <option value="Deluxe Pro" <%=room && room.type=='Deluxe Pro' ? 'selected' : '' %>>Deluxe
+                                Pro</option>
+                            <option value="Deluxe Room" <%=room && room.type=='Deluxe Room' ? 'selected' : '' %>>Deluxe
+                                Room</option>
+                            <option value="Standard Room" <%=room && room.type=='Standard Room' ? 'selected' : '' %>
+                                >Standard Room</option>
+                        </select>
                     </div>
 
                     <div class="form-group">
-                        <label>Room Type</label>
-                        <select name="type" required>
-                            <option value="Deluxe" <%=(room && room.type==='Deluxe' ) ? 'selected' : '' %>>Deluxe
-                            </option>
-                            <option value="Standard" <%=(room && room.type==='Standard' ) ? 'selected' : '' %>>Standard
-                            </option>
-                            <option value="Suite" <%=(room && room.type==='Suite' ) ? 'selected' : '' %>>Suite</option>
-                        </select>
+                        <label>Room Numbers (Separate by commas)</label>
+                        <textarea name="roomNumbers" rows="2" placeholder="e.g. 101, 102, 103"
+                            required><%= (room && room.roomNumbers) ? room.roomNumbers.map(r => r.number).join(', ') : '' %></textarea>
                     </div>
 
                     <div class="form-group">
@@ -66,11 +71,34 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Bed Type</label>
+                        <input type="text" name="bedType"
+                            value="<%= room ? room.bedType : '1 extra-large double bed' %>"
+                            placeholder="e.g. 1 extra-large double bed">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Short Description</label>
+                        <textarea name="description" rows="3"
+                            placeholder="Enter a short description about the room..."><%= room ? room.description : '' %></textarea>
+                    </div>
+
+                    <div class="form-group">
                         <label>Availability</label>
                         <select name="available">
                             <option value="true" <%=(room && room.available) ? 'selected' : '' %>>Available</option>
                             <option value="false" <%=(room && !room.available) ? 'selected' : '' %>>Occupied /
                                 Maintenance</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Room Category (AC/Non-AC)</label>
+                        <select name="isAC">
+                            <option value="true" <%=(room && room.isAC) ? 'selected' : '' %>>Air Conditioned (A.C.)
+                            </option>
+                            <option value="false" <%=(room && room.isAC===false) ? 'selected' : '' %>>Non-Air
+                                Conditioned (Non-A.C.)</option>
                         </select>
                     </div>
 

@@ -3,6 +3,8 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const dashboardController = require('../controllers/dashboardController');
 const Room = require('../models/Room');
+const Booking = require('../models/Booking');
+const Review = require('../models/Review');
 
 router.get('/login', authController.getLogin);
 router.post('/login', authController.postLogin);
@@ -24,14 +26,27 @@ router.get('/home', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     try {
         const rooms = await Room.find({ available: true }).lean();
+        const now = new Date();
 
-        // Fetch reviews for each room and calculate average
+        // Calculate real-time availability for each room category
         const roomsWithRatings = await Promise.all(rooms.map(async (room) => {
+            // Find ALL active bookings for this room category
+            // We count all 'Reserved' and 'Checked In' to reflect inventory reduction
+            const activeBookings = await Booking.countDocuments({
+                room: room._id,
+                status: { $in: ['Reserved', 'Checked In'] }
+            });
+
+            const totalUnits = room.roomNumbers ? room.roomNumbers.length : 0;
+            const manualOccupied = room.roomNumbers ? room.roomNumbers.filter(rn => rn.status !== 'Available').length : 0;
+            const availableUnits = Math.max(0, totalUnits - manualOccupied - activeBookings);
+
             const reviews = await Review.find({ room: room._id }).populate('user', 'name').sort({ createdAt: -1 });
             const avgRating = reviews.length > 0
                 ? (reviews.reduce((acc, rev) => acc + rev.rating, 0) / reviews.length).toFixed(1)
                 : 0;
-            return { ...room, reviews, avgRating, totalReviews: reviews.length };
+
+            return { ...room, reviews, avgRating, totalReviews: reviews.length, availableUnits };
         }));
 
         res.render('home', { session: req.session, rooms: roomsWithRatings });
@@ -41,22 +56,67 @@ router.get('/home', async (req, res) => {
     }
 });
 
-const Review = require('../models/Review');
-
 router.get('/rooms', async (req, res) => {
     try {
-        const rooms = await Room.find({ available: true }).lean();
+        const { minPrice, maxPrice, ac, checkIn, checkOut } = req.query;
+        let query = { available: true };
 
-        // Fetch reviews for each room and calculate average
+        if (minPrice || maxPrice) {
+            query.price = {};
+            if (minPrice) query.price.$gte = parseInt(minPrice);
+            if (maxPrice) query.price.$lte = parseInt(maxPrice);
+        }
+
+        if (ac) {
+            query.isAC = ac === 'true';
+        }
+
+        const rooms = await Room.find(query).lean();
+
+        const startDate = (checkIn && checkIn.trim() !== '') ? new Date(checkIn) : null;
+        const endDate = (checkOut && checkOut.trim() !== '') ? new Date(checkOut) : null;
+
+        let totalAvailableCount = 0;
+
         const roomsWithRatings = await Promise.all(rooms.map(async (room) => {
+            // Calculate active bookings for this category
+            let activeBookingsCount = 0;
+
+            // Only use overlap logic if BOTH dates are valid
+            if (startDate && !isNaN(startDate.getTime()) && endDate && !isNaN(endDate.getTime())) {
+                // If specific dates are searched, use overlap logic
+                activeBookingsCount = await Booking.countDocuments({
+                    room: room._id,
+                    status: { $in: ['Reserved', 'Checked In'] },
+                    $or: [{ checkIn: { $lt: endDate }, checkOut: { $gt: startDate } }]
+                });
+            } else {
+                // Default: Count all active reservations (Inventory model)
+                activeBookingsCount = await Booking.countDocuments({
+                    room: room._id,
+                    status: { $in: ['Reserved', 'Checked In'] }
+                });
+            }
+
+            const totalUnits = room.roomNumbers ? room.roomNumbers.length : 0;
+            const manualOccupied = room.roomNumbers ? room.roomNumbers.filter(rn => rn.status !== 'Available').length : 0;
+            const availableUnits = Math.max(0, totalUnits - manualOccupied - activeBookingsCount);
+            totalAvailableCount += availableUnits;
+
             const reviews = await Review.find({ room: room._id }).populate('user', 'name').sort({ createdAt: -1 });
             const avgRating = reviews.length > 0
                 ? (reviews.reduce((acc, rev) => acc + rev.rating, 0) / reviews.length).toFixed(1)
                 : 0;
-            return { ...room, reviews, avgRating, totalReviews: reviews.length };
+
+            return { ...room, reviews, avgRating, totalReviews: reviews.length, availableUnits };
         }));
 
-        res.render('rooms', { session: req.session, rooms: roomsWithRatings });
+        res.render('rooms', {
+            session: req.session,
+            rooms: roomsWithRatings,
+            filters: req.query,
+            totalAvailable: totalAvailableCount
+        });
     } catch (err) {
         console.error(err);
         res.status(500).send('Error fetching rooms');
@@ -91,43 +151,7 @@ router.get('/guests', (req, res) => {
     res.render('guests', { session: req.session });
 });
 
-router.get('/my-booking', async (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
-    try {
-        const Booking = require('../models/Booking');
-        // Fetch the most recent booking for the user
-        const latestBooking = await Booking.findOne({ guest: req.session.user._id }).sort({ createdAt: -1 });
-
-        let bookingData = null;
-        if (latestBooking) {
-            // Find room details if needed, for now using saved data
-            const Room = require('../models/Room');
-            const room = await Room.findById(latestBooking.room);
-
-            bookingData = {
-                _id: latestBooking._id,
-                bookingId: latestBooking.bookingId || latestBooking._id.toString().slice(-6).toUpperCase(),
-                roomNumber: room ? room.number : 'N/A',
-                roomType: latestBooking.type,
-                floor: room ? room.floor : '1',
-                nights: latestBooking.nights,
-                checkIn: new Date(latestBooking.checkIn).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-                checkOut: new Date(latestBooking.checkOut).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-                pricePerNight: Math.round(latestBooking.amount / latestBooking.nights),
-                total: latestBooking.amount,
-                status: latestBooking.status,
-                amenities: ['WiFi', 'TV', 'Mini Bar', 'Room Service'],
-                specialRequests: 'None',
-                roomId: room ? room._id : null
-            };
-        }
-
-        res.render('my-booking', { session: req.session, booking: bookingData });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error fetching booking');
-    }
-});
+router.get('/my-booking', (req, res) => res.redirect('/dashboard/my-booking'));
 
 router.get('/profile', (req, res) => {
     if (!req.session.user) return res.redirect('/login');

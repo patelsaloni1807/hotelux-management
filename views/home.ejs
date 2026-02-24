@@ -83,101 +83,428 @@
 </head>
 
 <body class="website-bg"><%- include('partials/navbar_guest') %>
-        <main class="website-main">
-            <section class="hero">
-                <h1>Welcome to HOTELUX</h1>
-                <p>Book your stay with comfort and luxury</p>
-            </section>
-            <section class="features">
-                <div class="feature">Manage room bookings efficiently</div>
-                <div class="feature">Track your reservations</div>
-                <div class="feature">Instant billing and loyalty points</div>
-            </section>
-            <section>
-                <h2>Available Rooms</h2>
-                <div class="rooms-list">
-                    <% if (rooms && rooms.length> 0) {
-                        %><% rooms.forEach(room=> {
-                            %> <% if(room.available) { %>
-                                <div class="room-card">
-                                    <% if (room.image) { %> <img
-                                            src="<%= room.image.startsWith('data:') ? room.image : '/uploads/' + room.image %>"
-                                            alt="<%= room.type %>"
-                                            style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0;">
-                                        <% } else { %>
-                                            <div
-                                                style="width: 100%; height: 200px; background: #2d3748; border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
-                                                <span style="color: #a0aec0;">No Image</span>
-                                            </div>
-                                            <% } %>
-                                                <div class="card-content">
-                                                    <h3>
-                                                        <%=room.type %> (<%=room.number %>)
-                                                    </h3>
-                                                    <div class="avg-rating"
-                                                        style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                                                        <span style="color: #6366f1; font-size: 14px;">
-                                                            <% for(let i=1; i<=5; i++) { %> <i
-                                                                    class="<%= i <= Math.round(room.avgRating) ? 'fas' : 'far' %> fa-star"></i>
-                                                                <% } %>
-                                                        </span> <span style="color: #a0aec0; font-size: 12px;">(
-                                                            <%=room.totalReviews %> reviews)
-                                                        </span>
-                                                    </div>
-                                                    <p>₹<%=room.price %>/night</p>
-                                                    <p>Status: <span class="status-available">Available</span></p>
-                                                    <button
-                                                        onclick="openBookingModal('<%= room._id %>', '<%= room.type %>', '<%= room.price %>')"
-                                                        class="btn btn-primary btn-full" style="margin-top: auto;">Book
-                                                        Now</button>
-                                                </div>
+        <main>
+            <section class="website-hero">
+                <div class="website-main" style="padding: 0;">
+                    <h1>Find your next stay</h1>
+                    <p>Search deals on rooms, suites, and more at HOTELUX...</p>
+                </div>
+
+                <form action="/rooms" method="GET" class="search-bar-container">
+                    <div class="search-item date-range-item" id="dateRangeItem" onclick="toggleCalendarDropdown(event)">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div class="search-label">
+                            <span>Check-in date — Check-out date</span>
+                            <div class="date-display-text" id="dateDisplayText">Add dates</div>
+                        </div>
+
+                        <!-- Calendar Dropdown Popover -->
+                        <div class="calendar-dropdown" id="calendarDropdown" onclick="event.stopPropagation()">
+                            <div class="calendar-tabs">
+                                <div class="calendar-tab active">Calendar</div>
+                                <div class="calendar-tab">I'm flexible</div>
+                            </div>
+                            <div class="calendar-body">
+                                <div class="month-view">
+                                    <div class="month-header">
+                                        <i class="fas fa-chevron-left nav-arr prev" onclick="changeMonth(-1)"></i>
+                                        <span id="month1-name">February 2026</span>
+                                    </div>
+                                    <div class="days-grid">
+                                        <div class="day-name">Su</div>
+                                        <div class="day-name">Mo</div>
+                                        <div class="day-name">Tu</div>
+                                        <div class="day-name">We</div>
+                                        <div class="day-name">Th</div>
+                                        <div class="day-name">Fr</div>
+                                        <div class="day-name">Sa</div>
+                                        <div id="month1-days" class="days-container" style="display: contents;"></div>
+                                    </div>
                                 </div>
-                                <% } %>
-                                    <% }) %>
-                                        <% } else { %>
-                                            <p>No available rooms.</p>
-                                            <% } %>
-                </div>
+                                <div class="month-view">
+                                    <div class="month-header">
+                                        <span id="month2-name">March 2026</span>
+                                        <i class="fas fa-chevron-right nav-arr next" onclick="changeMonth(1)"></i>
+                                    </div>
+                                    <div class="days-grid">
+                                        <div class="day-name">Su</div>
+                                        <div class="day-name">Mo</div>
+                                        <div class="day-name">Tu</div>
+                                        <div class="day-name">We</div>
+                                        <div class="day-name">Th</div>
+                                        <div class="day-name">Fr</div>
+                                        <div class="day-name">Sa</div>
+                                        <div id="month2-days" class="days-container" style="display: contents;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="calendar-footer">
+                                <button type="button" class="footer-btn active">Exact dates</button>
+                                <button type="button" class="footer-btn"><i class="fas fa-plus"></i> 1 day</button>
+                                <button type="button" class="footer-btn"><i class="fas fa-plus"></i> 2 days</button>
+                                <button type="button" class="footer-btn"><i class="fas fa-plus"></i> 3 days</button>
+                                <button type="button" class="footer-btn"><i class="fas fa-plus"></i> 7 days</button>
+                                <button type="button" class="btn-done"
+                                    style="width: auto; margin-left: auto; padding: 8px 24px;"
+                                    onclick="closeCalendarDropdown()">Done</button>
+                            </div>
+                        </div>
+
+                        <!-- Hidden inputs for form -->
+                        <input type="hidden" name="checkIn" id="input-checkIn">
+                        <input type="hidden" name="checkOut" id="input-checkOut">
+                    </div>
+                    <div class="search-item guest-selection-item" id="guestSelectionItem"
+                        onclick="toggleGuestDropdown(event)">
+                        <i class="fas fa-user-friends"></i>
+                        <div class="search-label">
+                            <span>Guests</span>
+                            <div class="guest-display-text" id="guestDisplayText">2 adults · 0 children · 1 room</div>
+                        </div>
+
+                        <!-- Guest Dropdown Popover -->
+                        <div class="guest-dropdown" id="guestDropdown" onclick="event.stopPropagation()">
+                            <div class="guest-row">
+                                <span class="guest-type">Adults</span>
+                                <div class="counter-control">
+                                    <button type="button" class="counter-btn"
+                                        onclick="updateGuestCount('adults', -1)">-</button>
+                                    <span class="count-val" id="count-adults">2</span>
+                                    <button type="button" class="counter-btn"
+                                        onclick="updateGuestCount('adults', 1)">+</button>
+                                </div>
+                            </div>
+                            <div class="guest-row">
+                                <span class="guest-type">Children</span>
+                                <div class="counter-control">
+                                    <button type="button" class="counter-btn"
+                                        onclick="updateGuestCount('children', -1)">-</button>
+                                    <span class="count-val" id="count-children">0</span>
+                                    <button type="button" class="counter-btn"
+                                        onclick="updateGuestCount('children', 1)">+</button>
+                                </div>
+                            </div>
+                            <div class="guest-row">
+                                <span class="guest-type">Rooms</span>
+                                <div class="counter-control">
+                                    <button type="button" class="counter-btn"
+                                        onclick="updateGuestCount('rooms', -1)">-</button>
+                                    <span class="count-val" id="count-rooms">1</span>
+                                    <button type="button" class="counter-btn"
+                                        onclick="updateGuestCount('rooms', 1)">+</button>
+                                </div>
+                            </div>
+
+                            <div class="pets-toggle-row">
+                                <span>Travelling with pets?</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="pets-checkbox">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div class="dropdown-footer">
+                                <p>Assistance animals aren't considered pets. <a href="#"
+                                        style="display: inline; color: #006ce4;">Read more about travelling with
+                                        assistance animals</a></p>
+                                <button type="button" class="btn-done"
+                                    onclick="toggleGuestDropdown(event)">Done</button>
+                            </div>
+                        </div>
+
+                        <!-- Hidden inputs for form submission -->
+                        <input type="hidden" name="adults" id="input-adults" value="2">
+                        <input type="hidden" name="children" id="input-children" value="0">
+                        <input type="hidden" name="rooms" id="input-rooms" value="1">
+                        <input type="hidden" name="pets" id="input-pets" value="false">
+                    </div>
+                    <button type="submit" class="btn-search" style="border-radius: 0 6px 6px 0;">Search</button>
+                </form>
             </section>
-        </main>
-        < !-- Booking Modal -->
-            <div class="modal-overlay" id="bookingModal">
-                <div class="modal-box">
-                    <h2 id="modalTitle">Book Room</h2><span class="modal-price" id="modalPrice">₹0/night</span>
-                    <form action="/book" method="POST"><input type="hidden" name="roomId" id="modalRoomId">
-                        <div class="form-group"><label>Check-in Date</label><input type="date" name="checkIn" required>
+
+            <section class="website-main">
+                <div class="destinations-section">
+                    <h2>Trending destinations</h2>
+                    <p>Most popular choices for travelers near Mehsana, Gujarat</p>
+                    <div class="destinations-grid">
+                        <div class="destination-card card-lg">
+                            <img src="/images/destinations/modhera.png" alt="Modhera Sun Temple">
+                            <div class="destination-label">Modhera Sun Temple 🇮🇳</div>
                         </div>
-                        <div class="form-group"><label>Check-out Date</label><input type="date" name="checkOut"
-                                required></div>
-                        <div class="modal-actions">
-                            <button type="button" class="btn btn-outline btn-full"
-                                onclick="closeBookingModal()">Cancel</button>
-                            <button type="submit" class="btn btn-primary btn-full">Confirm Booking</button>
+                        <div class="destination-card card-lg">
+                            <img src="/images/destinations/ranikivav.png" alt="Rani ki Vav">
+                            <div class="destination-label">Rani ki Vav, Patan 🇮🇳</div>
                         </div>
-                    </form>
+                        <div class="destination-card card-sm">
+                            <img src="/images/destinations/vadnagar.png" alt="Vadnagar">
+                            <div class="destination-label">Vadnagar 🇮🇳</div>
+                        </div>
+                        <div class="destination-card card-sm">
+                            <img src="/images/destinations/taranga.png" alt="Taranga Hills">
+                            <div class="destination-label">Taranga Hills 🇮🇳</div>
+                        </div>
+                        <div class="destination-card card-sm">
+                            <img src="/images/destinations/dharoi.png" alt="Dharoi Dam">
+                            <div class="destination-label">Dharoi Dam 🇮🇳</div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <script>function openBookingModal(id, type, price) {
-                    document.getElementById('bookingModal').style.display = 'flex';
-                    document.getElementById('modalTitle').innerText = 'Book ' + type;
-                    document.getElementById('modalPrice').innerText = '₹' + price + '/night';
-                    document.getElementById('modalRoomId').value = id;
-                }
 
-                function closeBookingModal() {
-                    document.getElementById('bookingModal').style.display = 'none';
-                }
-
-                // Close modal on outside click
-                window.onclick = function (event) {
-                    const modal = document.getElementById('bookingModal');
-
-                    if (event.target == modal) {
-                        modal.style.display = "none";
+                <section class="why-choose-us">
+                    <h2>Why Choose Hotelux?</h2>
+                    <div class="benefits-grid">
+                        <div class="benefit-card">
+                            <div class="benefit-badge">
+                                <img src="/images/benefits/booking.png" alt="Booking Benefit">
+                            </div>
+                            <div class="benefit-info">
+                                <h3>Flexible Payment Options</h3>
+                                <p>Book your stay now and pay conveniently upon arrival at the property.</p>
+                            </div>
+                        </div>
+                        <div class="benefit-card">
+                            <div class="benefit-badge">
+                                <img src="/images/benefits/reviews.png" alt="Reviews Benefit">
+                            </div>
+                            <div class="benefit-info">
+                                <h3>Authentic Guest Experiences</h3>
+                                <p>Read verified reviews from thousands of happy guests who stayed with us.</p>
+                            </div>
+                        </div>
+                        <div class="benefit-card">
+                            <div class="benefit-badge">
+                                <img src="/images/benefits/global.png" alt="Global Benefit">
+                            </div>
+                            <div class="benefit-info">
+                                <h3>World-Class Accommodations</h3>
+                                <p>Discover a curated selection of luxury rooms and suites tailored for you.</p>
+                            </div>
+                        </div>
+                        <div class="benefit-card">
+                            <div class="benefit-badge">
+                                <img src="/images/benefits/service.png" alt="Service Benefit">
+                            </div>
+                            <div class="benefit-info">
+                                <h3>24/7 Personalized Service</h3>
+                                <p>Our dedicated hospitality team is always here to ensure your perfect stay.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+        </main>
+        <%- include('partials/footer') %>
+            < !-- Booking Modal -->
+                <div class="modal-overlay" id="bookingModal">
+                    <div class="modal-box">
+                        <h2 id="modalTitle">Book Room</h2><span class="modal-price" id="modalPrice">₹0/night</span>
+                        <form action="/book" method="POST"><input type="hidden" name="roomId" id="modalRoomId">
+                            <div class="form-group"><label>Check-in Date</label><input type="date" name="checkIn"
+                                    required>
+                            </div>
+                            <div class="form-group"><label>Check-out Date</label><input type="date" name="checkOut"
+                                    required></div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-outline btn-full"
+                                    onclick="closeBookingModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary btn-full">Confirm Booking</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <script>function openBookingModal(id, type, price) {
+                        document.getElementById('bookingModal').style.display = 'flex';
+                        document.getElementById('modalTitle').innerText = 'Book ' + type;
+                        document.getElementById('modalPrice').innerText = '₹' + price + '/night';
+                        document.getElementById('modalRoomId').value = id;
                     }
-                }
 
-            </script>
+                    function closeBookingModal() {
+                        document.getElementById('bookingModal').style.display = 'none';
+                    }
+
+                    // Calendar Logic
+                    let currentMonth = new Date().getMonth();
+                    let currentYear = new Date().getFullYear();
+                    let startDate = null;
+                    let endDate = null;
+
+                    function renderCalendars() {
+                        renderMonth(currentYear, currentMonth, 'month1');
+                        const nextMonth = (currentMonth + 1) % 12;
+                        const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+                        renderMonth(nextYear, nextMonth, 'month2');
+                    }
+
+                    function renderMonth(year, month, target) {
+                        const daysContainer = document.getElementById(`${target}-days`);
+                        const monthName = document.getElementById(`${target}-name`);
+                        const weeks = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+                        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+                        monthName.innerText = `${months[month]} ${year}`;
+                        daysContainer.innerHTML = '';
+
+                        const firstDay = new Date(year, month, 1).getDay();
+                        const daysInMonth = new Date(year, month + 1, 0).getDate();
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+
+                        // padding
+                        for (let i = 0; i < firstDay; i++) {
+                            const empty = document.createElement('div');
+                            empty.className = 'day-cell empty';
+                            daysContainer.appendChild(empty);
+                        }
+
+                        for (let day = 1; day <= daysInMonth; day++) {
+                            const cell = document.createElement('div');
+                            cell.className = 'day-cell';
+                            cell.innerText = day;
+
+                            const date = new Date(year, month, day);
+                            if (date < today) {
+                                cell.classList.add('disabled');
+                            } else {
+                                if (startDate && date.getTime() === startDate.getTime()) cell.classList.add('selected');
+                                if (endDate && date.getTime() === endDate.getTime()) cell.classList.add('selected');
+                                if (startDate && endDate && date > startDate && date < endDate) cell.classList.add('in-range');
+
+                                cell.onclick = (e) => {
+                                    e.stopPropagation();
+                                    selectDate(date);
+                                };
+                            }
+
+                            if (date.getTime() === today.getTime()) cell.classList.add('today');
+
+                            daysContainer.appendChild(cell);
+                        }
+                    }
+
+                    function selectDate(date) {
+                        if (!startDate || (startDate && endDate)) {
+                            startDate = date;
+                            endDate = null;
+                        } else if (date < startDate) {
+                            startDate = date;
+                        } else if (date.getTime() === startDate.getTime()) {
+                            startDate = null;
+                        } else {
+                            endDate = date;
+                        }
+
+                        updateDateDisplay();
+                        renderCalendars();
+                    }
+
+                    function updateDateDisplay() {
+                        const display = document.getElementById('dateDisplayText');
+                        const inputIn = document.getElementById('input-checkIn');
+                        const inputOut = document.getElementById('input-checkOut');
+
+                        if (startDate && endDate) {
+                            const startStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            const endStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            display.innerText = `${startStr} — ${endStr}`;
+                            inputIn.value = startDate.toISOString().split('T')[0];
+                            inputOut.value = endDate.toISOString().split('T')[0];
+                        } else if (startDate) {
+                            display.innerText = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            inputIn.value = startDate.toISOString().split('T')[0];
+                        } else {
+                            display.innerText = "Add dates";
+                        }
+                    }
+
+                    function changeMonth(delta) {
+                        currentMonth += delta;
+                        if (currentMonth < 0) {
+                            currentMonth = 11;
+                            currentYear--;
+                        } else if (currentMonth > 11) {
+                            currentMonth = 0;
+                            currentYear++;
+                        }
+                        renderCalendars();
+                    }
+
+                    function toggleCalendarDropdown(event) {
+                        event.stopPropagation();
+                        const dropdown = document.getElementById('calendarDropdown');
+                        dropdown.classList.toggle('active');
+                        if (dropdown.classList.contains('active')) renderCalendars();
+                    }
+
+                    function closeCalendarDropdown() {
+                        document.getElementById('calendarDropdown').classList.remove('active');
+                    }
+
+                    // Initialize
+                    renderCalendars();
+
+                    function toggleGuestDropdown(event) {
+                        event.stopPropagation();
+                        const dropdown = document.getElementById('guestDropdown');
+                        dropdown.classList.toggle('active');
+                    }
+
+                    function updateGuestCount(type, change) {
+                        const countSpan = document.getElementById(`count-${type}`);
+                        const inputHidden = document.getElementById(`input-${type}`);
+                        let currentCount = parseInt(countSpan.innerText);
+
+                        let min = 0;
+                        if (type === 'adults' || type === 'rooms') min = 1;
+
+                        let newCount = currentCount + change;
+                        if (newCount < min) newCount = min;
+                        if (newCount > 30) newCount = 30; // Reasonable limit
+
+                        countSpan.innerText = newCount;
+                        inputHidden.value = newCount;
+
+                        updateGuestDisplayText();
+                    }
+
+                    function updateGuestDisplayText() {
+                        const adults = document.getElementById('count-adults').innerText;
+                        const children = document.getElementById('count-children').innerText;
+                        const rooms = document.getElementById('count-rooms').innerText;
+
+                        const text = `${adults} adults · ${children} children · ${rooms} room${rooms > 1 ? 's' : ''}`;
+                        document.getElementById('guestDisplayText').innerText = text;
+                    }
+
+                    // Handle pets checkbox
+                    document.getElementById('pets-checkbox').addEventListener('change', function () {
+                        document.getElementById('input-pets').value = this.checked;
+                    });
+
+                    // Close dropdowns when clicking outside
+                    window.addEventListener('click', function (event) {
+                        const guestDropdown = document.getElementById('guestDropdown');
+                        const guestItem = document.getElementById('guestSelectionItem');
+                        const calendarDropdown = document.getElementById('calendarDropdown');
+                        const calendarItem = document.getElementById('dateRangeItem');
+
+                        if (guestItem && !guestItem.contains(event.target)) {
+                            guestDropdown.classList.remove('active');
+                        }
+                        if (calendarItem && !calendarItem.contains(event.target)) {
+                            calendarDropdown.classList.remove('active');
+                        }
+                    });
+
+                    // Close modal on outside click
+                    window.onclick = function (event) {
+                        const modal = document.getElementById('bookingModal');
+
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    }
+
+                </script>
 </body>
 
 </html>

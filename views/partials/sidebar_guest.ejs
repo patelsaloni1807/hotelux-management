@@ -9,9 +9,9 @@
                 <%= user ? user.name.charAt(0).toUpperCase() : 'G' %>
             </span>
             <div class="user-info">
-                <span class="user-name">
+                <a href="/dashboard/my-booking" class="sidebar-item">
                     <%= user ? user.name : 'Guest' %>
-                </span>
+                </a>
                 <span class="user-role">Guest</span>
             </div>
         </div>

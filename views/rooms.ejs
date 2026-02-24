@@ -87,11 +87,29 @@
       margin-bottom: 12px;
     }
 
+    .review-user {
+      font-weight: bold;
+      color: #3b82f6;
+      margin-bottom: 4px;
+    }
+
+    .review-text {
+      color: #e2e8f0;
+      margin-top: 8px;
+    }
+
+    /* Clickable Review Count */
     .review-count {
-      color: #a0aec0;
+      color: #6366f1;
       font-size: 14px;
       cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .review-count:hover {
       text-decoration: underline;
+      color: #4f46e5;
     }
 
     .reviews-modal {
@@ -173,52 +191,218 @@
 
 <body class="website-bg">
   <%- include('partials/navbar_guest') %>
-    <main class="website-main">
-      <section>
-        <h2>Available Rooms</h2>
-        <div class="rooms-list">
+    <main class="website-main" style="max-width: 100%; padding: 48px 10vw; min-height: 80vh;">
+      <div class="search-container">
+        <!-- Sidebar Filters -->
+        <aside class="search-sidebar">
+          <div class="filter-box">
+            <h3>Filter by:</h3>
+
+            <div class="filter-section">
+              <h4>Your budget (per night)</h4>
+              <div class="price-range-visual">
+                <input type="range" id="priceRange" min="500" max="10000" step="100"
+                  value="<%= filters.maxPrice || 10000 %>" style="width: 100%; cursor: pointer; accent-color: #006ce4;">
+                <div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 14px;">
+                  <span>₹ 500</span>
+                  <span id="priceValue">₹ <%= filters.maxPrice || 10000 %></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="filter-section">
+              <h4>Room Category</h4>
+              <label
+                style="display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 8px; cursor: pointer;">
+                <input type="radio" name="ac_filter" value="true" <%=filters.ac==='true' ? 'checked' : '' %>
+                onchange="filterAC(this.value)"> A.C. Rooms
+              </label>
+              <label
+                style="display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 8px; cursor: pointer;">
+                <input type="radio" name="ac_filter" value="false" <%=filters.ac==='false' ? 'checked' : '' %>
+                onchange="filterAC(this.value)"> Non A.C. Rooms
+              </label>
+              <label
+                style="display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 0; cursor: pointer;">
+                <input type="radio" name="ac_filter" value="" <%=!filters.ac ? 'checked' : '' %>
+                onchange="filterAC('')"> All
+              </label>
+            </div>
+
+            <div class="filter-section">
+              <h4>Popular filters</h4>
+
+              <div class="filter-card-item" onclick="toggleFilterCard(this)">
+                <i class="fas fa-wifi"></i>
+                <span>Free High-Speed WiFi</span>
+                <input type="checkbox" name="f_wifi">
+              </div>
+
+              <div class="filter-card-item" onclick="toggleFilterCard(this)">
+                <i class="fas fa-swimming-pool"></i>
+                <span>Luxury Pool Access</span>
+                <input type="checkbox" name="f_pool">
+              </div>
+
+              <div class="filter-card-item" onclick="toggleFilterCard(this)">
+                <i class="fas fa-concierge-bell"></i>
+                <span>24/7 Room Service</span>
+                <input type="checkbox" name="f_service">
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Results Area -->
+        <div class="results-area">
+          <div class="results-header">
+            <h2>Hotelux Mehsana: <%= typeof totalAvailable !=='undefined' ? totalAvailable : rooms.length %> rooms found
+            </h2>
+          </div>
+
           <% if (rooms && rooms.length> 0) { %>
             <% rooms.forEach(room=> { %>
-              <% if(room.available) { %>
-                <div class="room-card">
-                  <% if (room.image) { %>
-                    <img src="<%= room.image.startsWith('data:') ? room.image : '/uploads/' + room.image %>"
-                      alt="<%= room.type %>"
-                      style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0;">
-                    <% } else { %>
-                      <div
-                        style="width: 100%; height: 200px; background: #2d3748; border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center;">
-                        <span style="color: #a0aec0;">No Image</span>
-                      </div>
-                      <% } %>
-                        <div class="card-content">
-                          <h3>
-                            <%= room.type %> (<%= room.number %>)
-                          </h3>
-                          <div class="avg-rating">
-                            <span class="star-rating">
-                              <% for(let i=1; i<=5; i++) { %>
-                                <i class="<%= i <= Math.round(room.avgRating) ? 'fas' : 'far' %> fa-star"></i>
-                                <% } %>
-                            </span>
-                            <span class="review-count" onclick="openReviewsModal('<%= room._id %>')">
-                              (<%= room.totalReviews %> reviews)
-                            </span>
-                          </div>
-                          <p>₹<%= room.price %>/night</p>
-                          <p>Status: <span class="status-available">Available</span></p>
-                          <button onclick="openBookingModal('<%= room._id %>', '<%= room.type %>', '<%= room.price %>')"
-                            class="btn btn-primary btn-full" style="margin-top: auto;">Book Now</button>
+              <% const availableUnits=room.availableUnits; if(room.available) { %>
+                <div class="room-card-horizontal">
+                  <div class="room-card-image">
+                    <div class="heart-icon"><i class="far fa-heart"></i></div>
+                    <% if (room.image) { %>
+                      <img src="<%= room.image.startsWith('data:') ? room.image : '/uploads/' + room.image %>"
+                        alt="<%= room.type %>">
+                      <% } else { %>
+                        <div class="no-image-placeholder">
+                          <i class="fas fa-image"></i>
+                          <span>No Image</span>
                         </div>
+                        <% } %>
+                  </div>
+
+                  <div class="room-card-info">
+                    <div class="room-card-header">
+                      <a href="#" class="room-card-title">
+                        <%= room.type %> Room
+                      </a>
+                    </div>
+                    <div class="room-card-location">Hotelux Mehsana <span>Show on map</span> • 1.2 km from centre</div>
+
+                    <div class="room-card-details">
+                      <div class="detail-line" style="color: var(--text-main); font-weight: 700;">
+                        <%= room.type %> Room • <%= room.isAC ? 'A.C.' : 'Non A.C.' %>
+                      </div>
+                      <div class="detail-line" style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                        <%= room.description || 'Spacious room with modern amenities for a comfortable stay.' %>
+                      </div>
+
+                      <% if(availableUnits===0) { %>
+                        <div class="tag-limited" style="margin-top: 8px; background: #e53e3e;">Sold Out for these dates
+                        </div>
+                        <% } else if(availableUnits <=3) { %>
+                          <div class="tag-limited" style="margin-top: 8px;">Only <%= availableUnits %> rooms left!</div>
+                          <% } else { %>
+                            <div class="detail-line" style="color: var(--success); font-weight: 600; margin-top: 6px;">
+                              <%= availableUnits %> rooms available
+                            </div>
+                            <% } %>
+
+                              <div class="detail-line"
+                                style="font-weight: 700; color: var(--text-main); margin-top: 8px;">
+                                <%= room.bedType || '1 extra-large double bed' %>
+                              </div>
+                              <div class="detail-line" style="color: var(--success); font-size: 13px; margin-top: 6px;">
+                                <i class="fas fa-check-circle" style="font-size: 12px;"></i> Free cancellation • No
+                                prepayment needed
+                              </div>
+                    </div>
+                  </div>
+
+                  <div class="room-card-pricing">
+                    <div class="rating-box">
+                      <div class="rating-info">
+                        <div class="rating-status">Excellent</div>
+                        <div class="rating-reviews" onclick="openReviewsModal('<%= room._id %>')">
+                          <%= room.totalReviews %> reviews
+                        </div>
+                      </div>
+                      <div class="rating-score">
+                        <%= room.avgRating %>
+                      </div>
+                    </div>
+
+                    <div class="price-box">
+                      <div class="price-meta">1 night, 2 adults</div>
+                      <div class="price-val">₹<%= room.price %>
+                      </div>
+                      <div class="price-tax">Includes taxes and charges</div>
+                      <% if(availableUnits> 0) { %>
+                        <button onclick="openBookingModal('<%= room._id %>', '<%= room.type %>', '<%= room.price %>')"
+                          class="btn-see-availability">See availability ></button>
+                        <% } else { %>
+                          <button class="btn-see-availability"
+                            style="background: #4a5568; cursor: not-allowed; opacity: 0.7;" disabled>Sold Out</button>
+                          <% } %>
+                    </div>
+                  </div>
                 </div>
                 <% } %>
                   <% }) %>
                     <% } else { %>
-                      <p>No available rooms.</p>
+                      <div class="no-results-premium">
+                        <i class="fas fa-search"
+                          style="font-size: 48px; color: var(--text-muted); margin-bottom: 20px;"></i>
+                        <h3>No Rooms Found</h3>
+                        <p>Try adjusting your search filters to find the perfect stay.</p>
+                      </div>
                       <% } %>
         </div>
-      </section>
+      </div>
     </main>
+
+    <script>
+      // Filter Logic
+      const priceRange = document.getElementById('priceRange');
+      const priceValue = document.getElementById('priceValue');
+
+      if (priceRange) {
+        priceRange.addEventListener('input', (e) => {
+          priceValue.innerText = `₹ ${e.target.value}`;
+        });
+
+        priceRange.addEventListener('change', (e) => {
+          updateFilters();
+        });
+      }
+
+      function toggleFilterCard(card) {
+        const checkbox = card.querySelector('input[type="checkbox"]');
+        checkbox.checked = !checkbox.checked;
+        card.classList.toggle('active', checkbox.checked);
+        // updateFilters(); // Uncomment if backend filtering for these is added
+      }
+
+      function filterAC(val) {
+        updateFilters(val);
+      }
+
+      function updateFilters(acVal) {
+        const url = new URL(window.location.href);
+        if (priceRange) url.searchParams.set('maxPrice', priceRange.value);
+
+        if (acVal !== undefined) {
+          if (acVal === '') {
+            url.searchParams.delete('ac');
+          } else {
+            url.searchParams.set('ac', acVal);
+          }
+        } else {
+          const currentAC = document.querySelector('input[name="ac_filter"]:checked');
+          if (currentAC && currentAC.value) {
+            url.searchParams.set('ac', currentAC.value);
+          }
+        }
+
+        window.location.href = url.href;
+      }
+    </script>
 
     <!-- Booking Modal -->
     <div class="modal-overlay" id="bookingModal">
@@ -277,76 +461,75 @@
         </div>
       </div>
     </div>
-
-    <!-- Inject reviews data safely for JS -->
-    <script id="reviewsData" type="application/json">
+    <%- include('partials/footer') %>
+      <script id="reviewsData" type="application/json">
       <%- JSON.stringify(rooms.reduce((acc, room) => {
             acc[room._id] = room.reviews || [];
             return acc;
           }, {})) %>
     </script>
 
-    <script>
-      const roomReviews = JSON.parse(document.getElementById('reviewsData').textContent);
+      <script>
+        const roomReviews = JSON.parse(document.getElementById('reviewsData').textContent);
 
-      function openBookingModal(id, type, price) {
-        document.getElementById('bookingModal').style.display = 'flex';
-        document.getElementById('modalTitle').innerText = 'Book ' + type;
-        document.getElementById('modalPrice').innerText = '₹' + price + '/night';
-        document.getElementById('modalRoomId').value = id;
-      }
+        function openBookingModal(id, type, price) {
+          document.getElementById('bookingModal').style.display = 'flex';
+          document.getElementById('modalTitle').innerText = 'Book ' + type;
+          document.getElementById('modalPrice').innerText = '₹' + price + '/night';
+          document.getElementById('modalRoomId').value = id;
+        }
 
-      function closeBookingModal() {
-        document.getElementById('bookingModal').style.display = 'none';
-      }
+        function closeBookingModal() {
+          document.getElementById('bookingModal').style.display = 'none';
+        }
 
-      function openReviewsModal(roomId) {
-        const reviews = roomReviews[roomId] || [];
-        const container = document.getElementById('reviewsContainer');
-        document.getElementById('reviewRoomId').value = roomId;
+        function openReviewsModal(roomId) {
+          const reviews = roomReviews[roomId] || [];
+          const container = document.getElementById('reviewsContainer');
+          document.getElementById('reviewRoomId').value = roomId;
 
-        container.innerHTML = reviews.length > 0 ? '' : '<p style="color: #a0aec0;">No reviews yet. Be the first to review!</p>';
+          container.innerHTML = reviews.length > 0 ? '' : '<p style="color: #a0aec0;">No reviews yet. Be the first to review!</p>';
 
-        reviews.forEach(review => {
-          const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
-          const date = new Date(review.createdAt).toLocaleDateString();
-          container.innerHTML += `
+          reviews.forEach(review => {
+            const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+            const date = new Date(review.createdAt).toLocaleDateString();
+            container.innerHTML += `
             <div class="review-item">
               <div class="review-user">${review.user ? review.user.name : 'Guest'} <span style="font-weight: normal; font-size: 12px; color: #718096; margin-left: 10px;">${date}</span></div>
               <div class="star-rating" style="font-size: 14px;">${stars}</div>
               <div class="review-text">${review.comment}</div>
             </div>
           `;
-        });
+          });
 
-        document.getElementById('reviewsModal').style.display = 'flex';
-        setRating(5); // Reset star selection to 5
-      }
+          document.getElementById('reviewsModal').style.display = 'flex';
+          setRating(5); // Reset star selection to 5
+        }
 
-      function closeReviewsModal() {
-        document.getElementById('reviewsModal').style.display = 'none';
-      }
+        function closeReviewsModal() {
+          document.getElementById('reviewsModal').style.display = 'none';
+        }
 
-      function setRating(rating) {
-        document.getElementById('ratingValue').value = rating;
-        const stars = document.querySelectorAll('#starInput i');
-        stars.forEach((star, index) => {
-          if (index < rating) {
-            star.classList.add('active');
-          } else {
-            star.classList.remove('active');
-          }
-        });
-      }
+        function setRating(rating) {
+          document.getElementById('ratingValue').value = rating;
+          const stars = document.querySelectorAll('#starInput i');
+          stars.forEach((star, index) => {
+            if (index < rating) {
+              star.classList.add('active');
+            } else {
+              star.classList.remove('active');
+            }
+          });
+        }
 
-      // Close modals on outside click
-      window.onclick = function (event) {
-        const bookingModal = document.getElementById('bookingModal');
-        const reviewsModal = document.getElementById('reviewsModal');
-        if (event.target == bookingModal) bookingModal.style.display = "none";
-        if (event.target == reviewsModal) reviewsModal.style.display = "none";
-      }
-    </script>
+        // Close modals on outside click
+        window.onclick = function (event) {
+          const bookingModal = document.getElementById('bookingModal');
+          const reviewsModal = document.getElementById('reviewsModal');
+          if (event.target == bookingModal) bookingModal.style.display = "none";
+          if (event.target == reviewsModal) reviewsModal.style.display = "none";
+        }
+      </script>
 </body>
 
 </html>

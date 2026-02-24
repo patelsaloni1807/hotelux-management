@@ -23,6 +23,7 @@ router.get('/profile', (req, res) => {
 
 router.get('/my-booking', bookingController.myBookings);
 router.get('/booking/cancel/:id', bookingController.cancelBooking);
+router.get('/booking/status/:id/:status', bookingController.updateStatus);
 
 // Room CRUD Routes
 router.get('/rooms/add', dashboardController.getAddRoom);

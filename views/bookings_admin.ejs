@@ -56,7 +56,17 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <button class="btn btn-primary btn-sm">Manage</button>
+                                        <div style="display: flex; gap: 8px;">
+                                            <% if (booking.status==='Reserved' ) { %>
+                                                <a href="/dashboard/booking/status/<%= booking._id %>/Checked In"
+                                                    class="btn btn-primary btn-sm">Check In</a>
+                                                <% } else if (booking.status==='Checked In' ) { %>
+                                                    <a href="/dashboard/booking/status/<%= booking._id %>/Checked Out"
+                                                        class="btn btn-primary btn-sm"
+                                                        style="background: #f56565;">Check Out</a>
+                                                    <% } %>
+                                                        <button class="btn btn-outline btn-sm">View</button>
+                                        </div>
                                     </td>
                                 </tr>
                                 <% }) %>

@@ -12,12 +12,33 @@ exports.getDashboard = async (req, res) => {
         const recentBookings = await Booking.find().sort({ checkIn: -1 }).limit(5).populate('guest');
         const revenue = await Booking.aggregate([{ $group: { _id: null, total: { $sum: "$amount" } } }]);
 
-        // Calculate room status counts for chart
-        const rooms = await Room.find();
-        const occupiedCount = rooms.filter(r => !r.available).length;
-        const availableCount = rooms.filter(r => r.available).length;
-        // Assuming maintenance isn't tracked yet, but adding placeholder
-        const maintenanceCount = 0;
+        // Calculate real-time room status counts
+        const allRooms = await Room.find();
+        const now = new Date();
+        const activeBookingsList = await Booking.find({
+            status: { $in: ['Reserved', 'Checked In'] },
+            checkIn: { $lte: now },
+            checkOut: { $gt: now }
+        });
+
+        const currentlyBookedNumbers = activeBookingsList.map(b => b.roomNumber);
+
+        let totalCount = 0;
+        let occupiedCount = 0;
+
+        allRooms.forEach(cat => {
+            if (cat.roomNumbers) {
+                totalCount += cat.roomNumbers.length;
+                cat.roomNumbers.forEach(rn => {
+                    if (rn.status !== 'Available' || currentlyBookedNumbers.includes(rn.number)) {
+                        occupiedCount++;
+                    }
+                });
+            }
+        });
+
+        const availableCount = totalCount - occupiedCount;
+        const maintenanceCount = allRooms.reduce((acc, cat) => acc + (cat.roomNumbers ? cat.roomNumbers.filter(rn => rn.status === 'Maintenance').length : 0), 0);
 
         res.render('dashboard_admin', {
             totalRooms,
@@ -56,10 +77,34 @@ exports.getGuests = async (req, res) => {
 exports.getRooms = async (req, res) => {
     if (!req.session.user || req.session.user.role !== 'admin') return res.redirect('/login');
     const rooms = await Room.find();
-    const totalRooms = rooms.length;
-    const availableRooms = rooms.filter(r => r.available).length;
-    const occupiedRooms = totalRooms - availableRooms;
-    res.render('rooms_admin', { rooms, totalRooms, availableRooms, occupiedRooms });
+    const now = new Date();
+    const activeBookingsList = await Booking.find({
+        status: { $in: ['Reserved', 'Checked In'] }
+    });
+    const currentlyBookedNumbers = activeBookingsList.map(b => b.roomNumber);
+
+    let totalRoomsCount = 0;
+    let availableRoomsCount = 0;
+
+    rooms.forEach(category => {
+        if (category.roomNumbers && Array.isArray(category.roomNumbers)) {
+            totalRoomsCount += category.roomNumbers.length;
+            category.roomNumbers.forEach(rn => {
+                if (rn.status === 'Available' && !currentlyBookedNumbers.includes(rn.number)) {
+                    availableRoomsCount++;
+                }
+            });
+        }
+    });
+
+    const occupiedRoomsCount = totalRoomsCount - availableRoomsCount;
+    res.render('rooms_admin', {
+        rooms,
+        totalRooms: totalRoomsCount,
+        availableRooms: availableRoomsCount,
+        occupiedRooms: occupiedRoomsCount,
+        currentlyBookedNumbers
+    });
 };
 
 // Add Room - GET
@@ -71,19 +116,28 @@ exports.getAddRoom = (req, res) => {
 // Add Room - POST
 exports.postAddRoom = async (req, res) => {
     if (!req.session.user || req.session.user.role !== 'admin') return res.redirect('/login');
-    const { number, type, price, available } = req.body;
+    const { type, price, available, roomNumbers, description, bedType } = req.body;
     let image = null;
     if (req.file) {
         const base64Image = req.file.buffer.toString('base64');
         image = `data:${req.file.mimetype};base64,${base64Image}`;
     }
 
+    // Process room numbers
+    const processedNumbers = roomNumbers.split(',').map(num => ({
+        number: num.trim(),
+        status: 'Available'
+    })).filter(r => r.number !== '');
+
     try {
         const newRoom = new Room({
-            number,
             type,
             price,
             available: available === 'true',
+            isAC: req.body.isAC === 'true',
+            description,
+            bedType: bedType || '1 extra-large double bed',
+            roomNumbers: processedNumbers,
             image
         });
         await newRoom.save();
@@ -109,12 +163,22 @@ exports.getEditRoom = async (req, res) => {
 // Edit Room - POST
 exports.postEditRoom = async (req, res) => {
     if (!req.session.user || req.session.user.role !== 'admin') return res.redirect('/login');
-    const { number, type, price, available } = req.body;
+    const { type, price, available, roomNumbers, description, bedType } = req.body;
+
+    // Process room numbers
+    const processedNumbers = roomNumbers.split(',').map(num => ({
+        number: num.trim(),
+        status: 'Available' // Status management could be more complex, but keeping it simple for now
+    })).filter(r => r.number !== '');
+
     const updateData = {
-        number,
         type,
         price,
-        available: available === 'true'
+        available: available === 'true',
+        isAC: req.body.isAC === 'true',
+        description,
+        bedType,
+        roomNumbers: processedNumbers
     };
 
     if (req.file) {
