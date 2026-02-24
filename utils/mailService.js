@@ -9,16 +9,13 @@ const passMasked = process.env.EMAIL_PASS ? (process.env.EMAIL_PASS.substring(0,
 console.log(`Using Password: ${passMasked}`);
 
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // use STARTTLS
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    tls: {
-        rejectUnauthorized: false
-    }
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
 // Verify connection configuration
@@ -102,4 +99,5 @@ exports.sendBookingConfirmation = async (user, booking) => {
         console.error('❌ Error sending booking confirmation email:', err);
     }
 };
+
 
