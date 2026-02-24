@@ -13,8 +13,8 @@ const transporter = nodemailer.createTransport({
     port: 587,
     secure: false, // use STARTTLS
     auth: {
-        user: 'patelsalu1807@gmail.com',
-        pass: 'cncpjzfnpzonmtxj'
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     },
     tls: {
         rejectUnauthorized: false
@@ -102,3 +102,4 @@ exports.sendBookingConfirmation = async (user, booking) => {
         console.error('❌ Error sending booking confirmation email:', err);
     }
 };
+
