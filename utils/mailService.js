@@ -10,11 +10,14 @@ console.log(`Using Password: ${passMasked}`);
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // use SSL
+    port: 587,
+    secure: false, // use STARTTLS
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        user: 'patelsalu1807@gmail.com',
+        pass: 'cncpjzfnpzonmtxj'
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
@@ -34,7 +37,7 @@ exports.sendBookingConfirmation = async (user, booking) => {
     }
 
     const mailOptions = {
-        from: `"HOTELUX Reservations" <${process.env.EMAIL_USER}>`,
+        from: '"HOTELUX Reservations" <patelsalu1807@gmail.com>',
         to: user.email,
         subject: `Booking Confirmed: #${booking.bookingId}`,
         html: `
@@ -89,8 +92,12 @@ exports.sendBookingConfirmation = async (user, booking) => {
     };
 
     try {
-        await transporter.sendMail(mailOptions);
-        console.log(`✅ Booking confirmation email sent to ${user.email}`);
+        console.log(`Sending email to: ${user.email}...`);
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`✅ Booking confirmation email sent!`);
+        console.log(`- Recipient: ${user.email}`);
+        console.log(`- MessageID: ${info.messageId}`);
+        console.log(`- Response: ${info.response}`);
     } catch (err) {
         console.error('❌ Error sending booking confirmation email:', err);
     }
